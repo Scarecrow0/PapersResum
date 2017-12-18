@@ -21,7 +21,6 @@ LOCAL_MODULE := MyCannyLib
 
 LOCAL_SRC_FILES := canny_demo.cpp   \
                    canny_lib.cpp \
-                   canny_lib_src/canny.cpp \
                    canny_lib_src/Line.cpp \
                    canny_lib_src/main.cpp \
                    canny_lib_src/MinHeap.cpp
