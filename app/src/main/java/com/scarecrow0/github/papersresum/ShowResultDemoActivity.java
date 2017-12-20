@@ -19,11 +19,13 @@ public class ShowResultDemoActivity extends AppCompatActivity {
 
     public static final int FROM_DEFAULT = 5465;
     public static final int FROM_CAMERA = 877;
+
+    private OpenCVCannyLibInteract openCVCannyLib;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.show_result);
-        OpenCVCannyLibInteract openCVCannyLib = new OpenCVCannyLibInteract(new OpenCVCannyLibInteract.CallbackInterface() {
+        openCVCannyLib = new OpenCVCannyLibInteract(new OpenCVCannyLibInteract.CallbackInterface() {
             @Override
             public void onEdgeDetectComplete(Bitmap img1) {
                 ImageView imageView = findViewById(R.id.edge_detect);
@@ -50,5 +52,11 @@ public class ShowResultDemoActivity extends AppCompatActivity {
         iv.setImageBitmap(bitmap);
         openCVCannyLib.startMatchimg(bitmap);
 
+    }
+
+    @Override
+    public void onStop() {
+        openCVCannyLib.exit();
+        super.onStop();
     }
 }

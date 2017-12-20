@@ -51,10 +51,11 @@ JNIEXPORT void JNICALL Java_OpenCvCanny_OpenCVCannyLib_cannyLauncher
 
 //  垃圾回收
     env->ReleaseIntArrayElements(img1_param, img1_jintarr, 0);
+
+
 }
 
 void EdgeDetected(Mat img1,CallbackInterface& callbackInterface){
-//todo 把各种canny 函数加进去
 
     GaussianBlur(img1, img1, Size(3, 3), 0, 0); // 高斯滤波
     Canny(img1, img1, 50, 150, 3); // 边缘检测
@@ -82,31 +83,23 @@ Mat SegmentExtract(Mat& img){
 
 
     vector<Line> line_set = createLine(lines_std);
-    int threshold = 15; // 阈值【5-10】
+    int threshold = 20; // 阈值【5-10】
     Mat img_sgmt_res(img);
     Mat dst(img.rows, img.cols, CV_8UC3, Scalar(255,255,255));
-
-
-
-
    // for(int j = 0; j < 2;j++) {
-
 
         for (int i = 0; i < 10; i++) {
             // Step2 删除较短的直线 (可选)
             //   line_set = cleanShort(line_set);
 
             // Step3 先进行直线的连接，然后聚合直线
-            line_set = connectLines(line_set, threshold + i*2, dst); // 连接
-            line_set = clusterLines(line_set, threshold + i*3, dst); // 聚合
+            line_set = connectLines(line_set, threshold + i, dst); // 连接
+            line_set = clusterLines(line_set, threshold + i, dst); // 聚合
 
-            //   line_set = clusterLines(line_set, threshold, dst); // 聚合
         }
 
         line_set = cleanShort(line_set);
 
-//        line_set = clusterLines(line_set, threshold, dst); // 聚合
-  //  }
 
 //   画出提取出直线后的图
     for (int i = 0; i < line_set.size(); i++) {
@@ -116,6 +109,12 @@ Mat SegmentExtract(Mat& img){
        	line(img_sgmt_res, line_set[i].start, line_set[i].end, Scalar(b, g, r), 2, CV_AA);
     }
     return img_sgmt_res;
+}
+
+
+CallbackInterface::~CallbackInterface(){
+    env -> DeleteLocalRef(this->callback_obj);
+    env -> DeleteLocalRef(this->callback_class);
 }
 
 
@@ -132,33 +131,17 @@ CallbackInterface::CallbackInterface(jobject& callback,JNIEnv* env) {
 }
 
 void CallbackInterface::onEdgeDetected(Mat& img1) {
-    CallbackMethodSelect(img1, ON_EDGE_DETECTED);
+    onEdgeDetectedCallback(img1,w,h);
 }
 
 void CallbackInterface::onSegmentExtracted(Mat& img1) {
-    CallbackMethodSelect(img1, ON_SEGMENT_EXTRACTED);
+    onSegmentExtractedCallback(img1,w,h);
 }
 
 
 void CallbackInterface::setImageSize(int w, int h) {
     this->w = w;
     this->h = h;
-}
-
-void CallbackInterface::CallbackMethodSelect(Mat &img1, int action, double rate) {
-    jintArray img1_arr,img2_arr ;
-    switch (action){
-        case ON_EDGE_DETECTED:
-            img1_arr = bitmapArrayFactoryGrayScale(env,img1,w,h);
-            env->CallVoidMethod(this->callback_obj,this->methodID_methodonEdgeDetected,img1_arr,w,h);
-            break;
-        case ON_SEGMENT_EXTRACTED:
-            img1_arr = bitmapArrayFactoryGrayScale(env,img1,w,h);
-            env->CallVoidMethod(callback_obj,methodID_onSegmentExtracted,img1_arr,w,h);
-            break;
-        default:
-            break;
-    }
 }
 
 
@@ -175,7 +158,7 @@ void CallbackInterface::CallbackMethodSelect(Mat &img1, int action, double rate)
 
 */
 
-jintArray bitmapArrayFactoryGrayScale(JNIEnv *env, Mat image, int w,int h){
+void CallbackInterface::onEdgeDetectedCallback(Mat image, int w,int h){
     int* outImage = new int[w * h];
     int n = 0;
     for(int i = 0; i < h; i++) {
@@ -192,12 +175,27 @@ jintArray bitmapArrayFactoryGrayScale(JNIEnv *env, Mat image, int w,int h){
     int size = w * h;
     jintArray result = env->NewIntArray(size);
     env->SetIntArrayRegion(result, 0, size, outImage);
-    return result;
+    env->CallVoidMethod(this->callback_obj,this->methodID_methodonEdgeDetected,result,w,h);
+    env -> DeleteLocalRef(result);
+    delete[] outImage;
 }
 
-jintArray bitmapArrayFactoryColor(JNIEnv *env, cv::Mat image, int w,int h){
+void CallbackInterface::onSegmentExtractedCallback(cv::Mat image, int w,int h){
     int* outImage = new int[w * h];
     int n = 0;
+
+
+     for(int i = 0; i < h; i++) {
+        uchar* data = image.ptr<uchar>(i);
+        for(int j = 0; j < w; j++) {
+            if(data[j] > 0) {
+                outImage[n++] =  0xFF000000;
+            }else {
+                outImage[n++] =  0xFFFFFFFF;
+            }
+        }
+   }
+     /*
     for(int i = 0; i < h; i++) {
         uchar* data = image.ptr<uchar>(i);
         for(int j = 0; j < w; j++) {
@@ -212,9 +210,12 @@ jintArray bitmapArrayFactoryColor(JNIEnv *env, cv::Mat image, int w,int h){
 
         }
     }
-
+*/
     int size = w * h;
     jintArray result = env->NewIntArray(size);
-    env->SetIntArrayRegion(result, 0, size, outImage);
-    return result;
+    env -> SetIntArrayRegion(result, 0, size, outImage);
+    env -> CallVoidMethod(callback_obj,methodID_onSegmentExtracted,result,w,h);
+    env -> DeleteLocalRef(result);
+    delete[] outImage;
+
 }

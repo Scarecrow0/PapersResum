@@ -80,13 +80,23 @@ bool canCluster(Line l1, Line l2, int th) {
 }
 
 
+bool canCluster2(Line l1, Line l2) {
+    int th = 5;
+    // double th = (l1.length + l2.length) / 2.0;
+    return abs(l1.k - l2.k) <= 0.15 &&  // 斜率差的绝对值小于0.3
+           ((l1.k > 0 && l2.k > 0) || (l1.k < 0 && l2.k < 0)) &&  // 斜率同号
+           distanceBetweenLine(l1, l2) < th; // 距离较近
+}
+
+
+
 /**
  * 计算两个点的距离
  * 输入：两个点（Point类型的对象）
  * 输出：两个点之间的距离，double类型
  */
 double pointDistance(Point p1, Point p2) {
-	return abs(p1.x - p2.x) + abs(p1.y - p2.y);
+	return pow( pow((p1.x - p2.x),2) + pow(abs(p1.y - p2.y),2),0.5) ;
 }
 
 
@@ -102,6 +112,7 @@ double distanceBetweenLine(Line l1, Line l2) {
 	return abs(A * mid.x + B * mid.y + C) / sqrt(A * A + B * B);*/
 	return pointDistance(l1.mid, l2.mid);
 }
+
 
 
 /**
@@ -215,6 +226,8 @@ vector<Line> clusterLines(vector<Line> lines, int th, Mat dst) {
 	__gnu_cxx::hash_set<int> set;
 	__gnu_cxx::hash_set<int>::iterator pos;
 
+    //set用来标记这条线之前访问过吗 避免重复访问
+
 	for (int i = 0; i < length; i++) {
 		pos = set.find(i);
 		if (pos != set.end()) { // 如果存在
@@ -242,7 +255,7 @@ vector<Line> clusterLines(vector<Line> lines, int th, Mat dst) {
 				}
 				break;
 			}
-			//todo 聚合条件2
+
 		}
 	    if (useless) {
 			(*result).push_back(line1);
@@ -250,6 +263,51 @@ vector<Line> clusterLines(vector<Line> lines, int th, Mat dst) {
 	}
 	vector<Line>().swap(lines);
 	return *result;
+}
+
+
+/**
+
+ * todo 聚合2  如果两个直线相近 而且斜率几乎一样 则取两个直线
+ * 相距最远的两个点组一条新直线 斜率取平均值
+ * @param lines
+ * @param th
+ * @param dst
+ * @return
+ */
+
+
+vector<Line> clusterLines2(vector<Line> lines, int th, Mat dst) {
+    vector<Line> *result = new vector<Line>();
+    size_t length = lines.size();
+    __gnu_cxx::hash_set<int> set;
+    __gnu_cxx::hash_set<int>::iterator pos;
+
+    //set用来标记这条线之前访问过吗 避免重复访问
+
+    for (int i = 0; i < length; i++) {
+        pos = set.find(i);
+        if (pos != set.end()) { // 如果存在
+            continue;
+        }
+        Line line1 = lines[i];
+        for (int j = i; j < length; j++) {
+            pos = set.find(j);
+            if (pos != set.end()) { // 如果存在
+                continue;
+            }
+            Line line2 = lines[j];
+            //聚合条件1
+            if (canCluster2(line1, line2)) { // 如果具备聚合条件
+                set.insert(i);
+                set.insert(j);
+
+                break;
+            }
+        }
+    }
+    vector<Line>().swap(lines);
+    return *result;
 }
 
 

@@ -2,6 +2,7 @@ package OpenCvCanny;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.os.Message;
 
 
 /**
@@ -33,6 +34,7 @@ public class OpenCVCannyLib {
     //      处理内部事务的线程
     private ProcessHandlerThread processingThread;
 
+
     //  负责从外部接受调用的方法
     public void startMatching(Handler callback, final Bitmap img1) {
         processingThread = new ProcessHandlerThread(callback);
@@ -62,4 +64,9 @@ public class OpenCVCannyLib {
         resultBitmap.setPixels(pix, 0, width, 0, 0, width, height);
         return resultBitmap;
     }
+
+    public void stopWorkThread() {
+        processingThread.quit();
+    }
+
 }

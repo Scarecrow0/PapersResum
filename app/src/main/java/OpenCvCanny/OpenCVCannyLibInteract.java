@@ -61,6 +61,7 @@ public class OpenCVCannyLibInteract {
 
 
     public void exit() {
+        openCVCanny.stopWorkThread();
         interactHandler.removeCallbacksAndMessages(null);
         interactHandler = null;
     }

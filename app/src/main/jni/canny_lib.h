@@ -31,9 +31,12 @@ private:
 
 public:
     CallbackInterface(jobject& callback,JNIEnv* env);
+    ~CallbackInterface();
     void setImageSize(int w,int h);
     void onEdgeDetected(Mat& img1);
     void onSegmentExtracted(Mat& img1);
+    void onEdgeDetectedCallback(Mat image, int w,int h);
+    void onSegmentExtractedCallback(Mat image, int w,int h);
 
 };
 
@@ -51,8 +54,6 @@ struct SegmentResult{
     }
 };
 
-jintArray bitmapArrayFactoryGrayScale(JNIEnv *env, cv::Mat image, int w,int h);
-jintArray bitmapArrayFactoryColor(JNIEnv *env, cv::Mat image, int w,int h);
 //工厂方法 将Mat 转为jintarray  便于回调
 void ResizeImage(cv::Mat& image1);
 

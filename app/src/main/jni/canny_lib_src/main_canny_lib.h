@@ -7,6 +7,7 @@
 #include "Line.h"
 #include "MinHeap.h"
 #include "canny.h"
+#include <cmath>
 using namespace std;
 using namespace cv;
 
