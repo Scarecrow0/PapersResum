@@ -87,12 +87,26 @@ Mat SegmentExtract(Mat& img){
     Mat dst(img.rows, img.cols, CV_8UC3, Scalar(255,255,255));
 
 
-    // Step2 删除较短的直线 (可选)
-    line_set = cleanShort(line_set);
 
-    // Step3 先进行直线的连接，然后聚合直线
-    line_set = connectLines(line_set, threshold, dst); // 连接
-    line_set = clusterLines(line_set, threshold, dst); // 聚合
+
+   // for(int j = 0; j < 2;j++) {
+
+
+        for (int i = 0; i < 10; i++) {
+            // Step2 删除较短的直线 (可选)
+            //   line_set = cleanShort(line_set);
+
+            // Step3 先进行直线的连接，然后聚合直线
+            line_set = connectLines(line_set, threshold + i*2, dst); // 连接
+            line_set = clusterLines(line_set, threshold + i*3, dst); // 聚合
+
+            //   line_set = clusterLines(line_set, threshold, dst); // 聚合
+        }
+
+        line_set = cleanShort(line_set);
+
+//        line_set = clusterLines(line_set, threshold, dst); // 聚合
+  //  }
 
 //   画出提取出直线后的图
     for (int i = 0; i < line_set.size(); i++) {

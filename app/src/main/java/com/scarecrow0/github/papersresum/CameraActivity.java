@@ -8,10 +8,15 @@ import android.support.v7.app.AppCompatActivity;
  */
 
 public class CameraActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_layout);
-
+        if (null == savedInstanceState) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.camera_container, Camera2BasicFragment.newInstance())
+                    .commit();
+        }
     }
 }

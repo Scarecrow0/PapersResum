@@ -1,12 +1,4 @@
-/*************************************************
 
-Copyright:bupt
-Author: lijialin 1040591521@qq.com
-Date:2017-10-14
-Description:写这段代码的时候，只有上帝和我知道它是干嘛的
-            现在只有上帝知道
-
-**************************************************/
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -21,12 +13,6 @@ Description:写这段代码的时候，只有上帝和我知道它是干嘛的
 
 using namespace cv;
 using namespace std;
-
-
-/***************************** 函数声明部分 start ***********************************/
-
-
-/***************************** 函数声明部分 end *************************************/
 
 
 
@@ -218,6 +204,7 @@ vector<Line> connectLines(vector<Line> lines, int th, Mat dst) {
 /**
  * 直线聚合函数,聚合的原则：
  * 如果两个直线的起点和终点相似，则保留那条长直线
+ todo 如果两个直线相聚距离相近  且斜率几乎相等 则取这对直线相聚最远的端点生成一个新的直线
  * 由于直线数量不多，采用暴力求解的方法，时间复杂度O(n2)
  * 输入：包含Line对象的向量，阈值int，矩阵Mat（作用就是测试的时候画图用）
  * 输出：包含Line对象的向量
@@ -241,6 +228,7 @@ vector<Line> clusterLines(vector<Line> lines, int th, Mat dst) {
 				continue;
 			}
 			Line line2 = lines[j];
+			//聚合条件1
 			if (canCluster(line1, line2, th)) { // 如果具备聚合条件
 				set.insert(i);
 				set.insert(j);
@@ -254,6 +242,7 @@ vector<Line> clusterLines(vector<Line> lines, int th, Mat dst) {
 				}
 				break;
 			}
+			//todo 聚合条件2
 		}
 	    if (useless) {
 			(*result).push_back(line1);
